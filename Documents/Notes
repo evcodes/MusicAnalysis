@@ -1,1 +1,15 @@
 Mode is whether the song uses a major or a minor key in its production. Though this value is straightforward with a 0 for minor and a 1 for major, there was also a value named mode_confidence that depicted the probability of the mode selected being accurate. With these two values, we combined the features to range from -1 for minor to 1 for major. A value of -1 represents 100% confidence that the key is minor and 1 represents 100% confidence that the key is major. The range of confidences for minor lie between -1 and 0 and the range of confidences for major lie between 0 and 1.
+
+----------------------------------------------------------------
+Genius has 1 song artist ID schema
+MSD is different, so combine into one ID
+
+Create database of song, ID, attributes, gender, etc.
+
+Run SA on lyrics for all songs in training set
+
+Throw into database as well
+----------------------------------------------------------------
+
+Medium Article
+https://towardsdatascience.com/what-songs-tell-us-about-text-mining-with-lyrics-ca80f98b3829
