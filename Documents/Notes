@@ -10,6 +10,10 @@ Run SA on lyrics for all songs in training set
 
 Throw into database as well
 ----------------------------------------------------------------
-
-Medium Article
-https://towardsdatascience.com/what-songs-tell-us-about-text-mining-with-lyrics-ca80f98b3829
+Useful Links:
+  - Medium Article (https://towardsdatascience.com/what-songs-tell-us-about-text-mining-with-lyrics-ca80f98b3829)
+  - Genius API (https://docs.genius.com/) + How to ese it (https://stackoverflow.com/questions/47400466/using-genius-api)
+  - Spotify API for Getting a Track (https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/)
+  - Echo Nest API (http://static.echonest.com/enspex/)
+  
+  
