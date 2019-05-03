@@ -1,9 +1,8 @@
 import re
 import string
 
-def clean_lyrics(lyrics="Hello my name is ^^^^what my na*&me is"):
+def clean(lyrics):
 	# split into list
-	lyrics = "Hello my name is ^^^^what my na*&me is"
 	words = lyrics.split()
 
 	# split by whitespace, remove punctuation
