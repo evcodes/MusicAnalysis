@@ -231,7 +231,7 @@ def setup():
     MAX_SEQUENCE_LENGTH = 300  # max length of text (words) including padding
     VALIDATION_SPLIT = 0.2
     EMBEDDING_DIM = 300  # embedding dimensions for word vectors (word2vec/GloVe)
-    GLOVE_DIR = "Databases/glove/glove.twitter.27B." + str(
+    GLOVE_DIR = "Databases/glove/glove.42B." + str(
         EMBEDDING_DIM) + "d.txt"
     print("[i] Loaded Parameters:\n",
           MAX_NB_WORDS, MAX_SEQUENCE_LENGTH + 5,
@@ -251,7 +251,7 @@ def setup():
         TOKENIZER = pickle.load(handle)
 
     SEQ = TOKENIZER.texts_to_sequences(TEXTS)
-    WORD_INDEX = TOKENIZER.WORD_INDEX
+    WORD_INDEX = TOKENIZER.word_index
     print('[i] Found %s unique tokens.' % len(WORD_INDEX))
     DATA_INT = pad_sequences(SEQ, padding='pre',
                              maxlen=(MAX_SEQUENCE_LENGTH - 5))
@@ -267,14 +267,15 @@ def setup():
     DATA = DATA[indices]
     LABELS = LABELS[indices]
     nb_validation_samples = int(VALIDATION_SPLIT * DATA.shape[0])
-
+    print('[+] Collecting Partitions:', nb_validation_samples)
     X_TRAIN = DATA[:-nb_validation_samples]
     Y_TRAIN = LABELS[:-nb_validation_samples]
     X_TEST = DATA[-nb_validation_samples:]
     Y_TEST = LABELS[-nb_validation_samples:]
-
+    print('[+] Collected Partitions:')
     EMBEDDING_INDEX = {}
-    f = open(GLOVE_DIR)
+    f = open(GLOVE_DIR, encoding="utf8")
+    print("Commencing read")
     print("[i] Loading GloVe from:", GLOVE_DIR, "...", end="")
     for line in f:
         values = line.split()
