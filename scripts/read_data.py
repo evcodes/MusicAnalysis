@@ -6,6 +6,8 @@ import os
 import glob
 from collections import defaultdict
 from pprint import pprint as pp
+from lyric_api import get_lyrics
+from sentiment import get_sent, prep_sent
 
 
 # Things we need from other databases:
@@ -57,13 +59,18 @@ def get_artist_gender(artist_name, gender_names_dict):
 	return gender_names_dict[artist_name.decode("utf-8")]
 
 
+def get_lyric_sentiment(artist_name, song_name):
+	lyrics = get_lyrics(artist_name, song_name)
+	if lyrics != None:
+		return get_sent(lyrics)
+	else:
+		return [0,0,0,0,0]
 
 
 # map artist names and genders to all attribute_lists from Million Songs into one dictionary
 def create_song_records(basedir, ext='.h5'):
 
 	gender_names_dict = create_artist_gender_dict()
-
 
 	attribute_list.append(('artist_name', get_artist_name))
 	attribute_list.append(('gender', get_artist_gender))
@@ -111,6 +118,7 @@ def create_song_records(basedir, ext='.h5'):
 	attribute_list.append(('track_7digitalid', get_track_7digitalid))
 	attribute_list.append(('track_id', get_track_id))
 	attribute_list.append(('year', get_year))
+	attribute_list.append(("sentiment", get_lyric_sentiment))
 
 	song_records = defaultdict(dict)
 
@@ -130,6 +138,9 @@ def create_song_records(basedir, ext='.h5'):
 				for i in attribute_list:
 					if (i[0] == 'gender'):
 						song_records[song_id.decode("utf-8")][i[0]] = i[1](get_artist_name(h5), gender_names_dict)
+					elif i[0] == 'sentiment':
+						song_records[song_id.decode("utf-8")][i[0]] = \
+							i[1](get_artist_name(h5), get_title(h5))
 					else:
 						song_records[song_id.decode("utf-8")][i[0]] = i[1](h5)
 
@@ -153,6 +164,7 @@ def create_song_records(basedir, ext='.h5'):
 
 
 def main():
+	prep_sent()
 	basedir = '../Databases/MSDsub/'
 	song_records = create_song_records(basedir)
 

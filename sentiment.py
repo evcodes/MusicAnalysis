@@ -14,20 +14,22 @@ from keras import backend as K
 from keras.engine.topology import Layer, InputSpec
 
 #The global constants below are designed for sentiment analysis
+def prep_sent():
+    global MAX_NB_WORDS, MAX_SEQUENCE_LENGTH, VALIDATION_SPLIT, EMBEDDING_DIM, \
+        TOKENIZER, CLASSES, model_test
+    MAX_NB_WORDS = 40000  # max no. of words for tokenizer
+    MAX_SEQUENCE_LENGTH = 30  # max length of text (words) including padding
+    VALIDATION_SPLIT = 0.2
+    EMBEDDING_DIM = 300  # embedding dimensions for word vectors (word2vec/GloVe)
 
-MAX_NB_WORDS = 40000  # max no. of words for tokenizer
-MAX_SEQUENCE_LENGTH = 30  # max length of text (words) including padding
-VALIDATION_SPLIT = 0.2
-EMBEDDING_DIM = 200  # embedding dimensions for word vectors (word2vec/GloVe)
+    # Open our word tokenizer
+    f = open('tokenizer.pickle', 'rb')
+    TOKENIZER = pickle.load(f)
+    K.clear_session()
+    CLASSES = ["neutral", "happy", "sad", "hate", "anger"]
+    model_test = load_model('checkpoint-1.097.h5')
 
-# Open our word tokenizer
-f = open('tokenizer.pickle', 'rb')
-tokenizer = pickle.load(f)
-K.clear_session()
-classes = ["neutral", "happy", "sad", "hate", "anger"]
-model_test = load_model('checkpoint-1.097.h5')
-
-model_test._make_predict_function()
+    model_test._make_predict_function()
 
 def get_sent(line):
     """ Given an input line runs sentiment
@@ -37,7 +39,7 @@ def get_sent(line):
     """
     parsedL = []
     parsedL.append(line)
-    sequences_test = tokenizer.texts_to_sequences(parsedL)
+    sequences_test = TOKENIZER.texts_to_sequences(parsedL)
 
     data_int_t = pad_sequences(sequences_test, padding='pre',
                                maxlen=(MAX_SEQUENCE_LENGTH - 5))
