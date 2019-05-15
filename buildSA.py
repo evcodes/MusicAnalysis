@@ -251,6 +251,7 @@ def setup():
         TOKENIZER = pickle.load(handle)
 
     SEQ = TOKENIZER.texts_to_sequences(TEXTS)
+    print("SEQ shape", len(SEQ))
     WORD_INDEX = TOKENIZER.word_index
     print('[i] Found %s unique tokens.' % len(WORD_INDEX))
     DATA_INT = pad_sequences(SEQ, padding='pre',
@@ -272,6 +273,7 @@ def setup():
     Y_TRAIN = LABELS[:-nb_validation_samples]
     X_TEST = DATA[-nb_validation_samples:]
     Y_TEST = LABELS[-nb_validation_samples:]
+    print("XTRAIN", X_TRAIN.shape,"YTRAIN", Y_TRAIN.shape,"XTest", X_TEST.shape,"YTEST", Y_TEST.shape)
     print('[+] Collected Partitions:')
     EMBEDDING_INDEX = {}
     f = open(GLOVE_DIR, encoding="utf8")
@@ -301,6 +303,7 @@ def build_network():
             embedding_matrix_ns[i] = embedding_vector
     print("Completed!")
 
+    batch_size = 128
     sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
 
     # static channel
@@ -404,7 +407,7 @@ def build_network():
     model = keras.models.load_model("checkpoint-1.097.h5")
 
     model_log = model.fit(X_TRAIN, Y_TRAIN, validation_data=(X_TEST, Y_TEST),
-                          epochs=200, batch_size=128)
+                          epochs=200)
 
     pd.DataFrame(model_log.history).to_csv("history-balance.csv")
 

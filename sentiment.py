@@ -13,8 +13,6 @@ from keras.models import Model
 from keras import backend as K
 from keras.engine.topology import Layer, InputSpec
 
-
-
 #The global constants below are designed for sentiment analysis
 
 MAX_NB_WORDS = 40000  # max no. of words for tokenizer
@@ -31,14 +29,12 @@ model_test = load_model('checkpoint-1.097.h5')
 
 model_test._make_predict_function()
 
-
 def get_sent(line):
     """ Given an input line runs sentiment
     analysis model to determine the relative
     Neutrality, Happiness, Angriness, Sadness
-    and Hate of speech
+    and Hate emotions of speech
     """
-
     parsedL = []
     parsedL.append(line)
     sequences_test = tokenizer.texts_to_sequences(parsedL)
@@ -51,11 +47,8 @@ def get_sent(line):
     y_prob = model_test.predict(data_test)
     return y_prob
 
-
 def main(line):
     print(get_sent(line))
-
-
 
 if __name__ == '__main__':
     main(sys.argv[1])
