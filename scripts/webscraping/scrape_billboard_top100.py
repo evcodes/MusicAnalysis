@@ -3,9 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 
 
+# PRE: Given a range of years
+# POST: Write CSV file with top 100 songs for every month every year
 def get_top_songs(year_start, year_end):
     delta = year_end - year_start
-
     output = []
 
     for i in range(0, delta):
@@ -42,9 +43,10 @@ def get_top_songs(year_start, year_end):
 
                     row = date + "," + str(
                         rank_tag_name[l].contents[k].strip("\n")) + "," + str(
-                        title_tag_name[j].contents[k].strip(
+                        title_tag_name[l].contents[k].strip(
                             "\n")) + "," + artist + '\n'
                 output.append(row)
+
     with open('top_songs_per_month_per_year.csv', 'w') as file:
         for m in output:
             file.write(m.strip('\n'))

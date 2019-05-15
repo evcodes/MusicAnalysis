@@ -6,6 +6,14 @@ import os
 import glob
 from collections import defaultdict
 
+
+'''
+We want to build out a database from the MSD
+There are specific methods to call to retrieve information from
+the H5 files. 
+
+We will extract all 44 features from the songs
+'''
 # extract artist names + corresponding gender info
 singers_gender_data = pd.read_csv('../Databases/singers_gender.csv', encoding="ISO-8859-1")
 artist_names   = singers_gender_data['artist']
