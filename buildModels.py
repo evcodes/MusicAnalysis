@@ -18,7 +18,7 @@ def test_model(model, X, Y):
     return 0
 
 URL = "OUR CSV URL"
-cols = [] # OUr attribute list
+cols = [] # Our attribute list
 
 df = pd.read_csv(URL, names=cols, sep=',')
 

@@ -5,6 +5,7 @@ from hdf5_getters import *
 import os
 import glob
 from collections import defaultdict
+from pprint import pprint as pp
 
 # extract artist names + corresponding gender info
 singers_gender_data = pd.read_csv('../Databases/singers_gender.csv', encoding="ISO-8859-1")
@@ -17,12 +18,29 @@ artist_gender = singers_gender_data['gender']
 	# billboard_pos
 	# billboard_date
 	# lyrical_sa
+attribute_list = []
 
+
+
+def to_csv(songs):
+	with open("songs.csv", 'wb') as f:
+		for i,att_title in enumerate(attribute_list):
+			if i < len(attribute_list) -1:
+				f.write(att_title[0] + ",")
+			else:
+				f.write(att_title[0] + "\n")
+		for song in songs.keys():
+			atts = songs[song].items()
+			for i, att in enumerate(atts):
+				if i < len(atts) - 1:
+					f.write(att + ",")
+				else:
+					f.write(att + "\n")
 
 # map artist names and genders to all attribute_lists from Million Songs into one table
 def create_song_record(basedir, ext='.h5'):
 
-	attribute_list = []
+
 	attribute_list.append(('artist_mbid', get_artist_mbid))
 	attribute_list.append(('artist_mbtags', get_artist_mbtags))
 	attribute_list.append(('artist_mbtags_count', get_artist_mbtags_count))
@@ -67,6 +85,7 @@ def create_song_record(basedir, ext='.h5'):
 	attribute_list.append(('track_7digitalid', get_track_7digitalid))
 	attribute_list.append(('track_id', get_track_id))
 	attribute_list.append(('year', get_year))
+	#attribute_list.append(('artist_gender', get_gender))
 
 	song_records = defaultdict(dict)
 
@@ -84,6 +103,8 @@ def create_song_record(basedir, ext='.h5'):
 			
 			h5.close()
 
+	print(type(song_records),"keys:",  len(song_records.keys()))
+	pp(song_records)
 	return song_records
 
 
