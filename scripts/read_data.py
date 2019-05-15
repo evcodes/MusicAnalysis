@@ -6,10 +6,6 @@ import os
 import glob
 from collections import defaultdict
 
-# extract artist names + corresponding gender info
-singers_gender_data = pd.read_csv('../Databases/singers_gender.csv', encoding="ISO-8859-1")
-artist_names   = singers_gender_data['artist']
-artist_gender = singers_gender_data['gender']
 
 # Things we need from other databases:
 	# artist_gender
@@ -18,15 +14,45 @@ artist_gender = singers_gender_data['gender']
 	# billboard_date
 	# lyrical_sa
 
+def create_artist_gender_dict():
+	# extract artist names + corresponding gender info
+	singers_gender_data = pd.read_csv('../Databases/singers_gender.csv', encoding="ISO-8859-1")
+	artist_names   = singers_gender_data['artist']
+	artist_gender = singers_gender_data['gender']
 
-# map artist names and genders to all attribute_lists from Million Songs into one table
-def create_song_record(basedir, ext='.h5'):
+	# create dictionary from names and dictionary
+	gender_names = pd.concat([artist_names, artist_gender], axis=1)
+	gender_names = gender_names.set_index('artist')
+	gender_names_dict = gender_names.to_dict()['gender']
+
+	return gender_names_dict
+
+
+
+
+def get_artist_gender(artist_name, gender_names_dict):
+
+	# if artist_name.decode("utf-8") in gender_names_dict:
+	# 	return gender_names_dict[artist_name.decode("utf-8")]
+	# else:
+	# 	return 'Gender Unknown'
+	return gender_names_dict[artist_name.decode("utf-8")]
+
+
+
+
+# map artist names and genders to all attribute_lists from Million Songs into one dictionary
+def create_song_records(basedir, ext='.h5'):
+
+	gender_names_dict = create_artist_gender_dict()
 
 	attribute_list = []
+	attribute_list.append(('artist_name', get_artist_name))
+	attribute_list.append(('gender', get_artist_gender))
 	attribute_list.append(('artist_mbid', get_artist_mbid))
 	attribute_list.append(('artist_mbtags', get_artist_mbtags))
 	attribute_list.append(('artist_mbtags_count', get_artist_mbtags_count))
-	attribute_list.append(('artist_name', get_artist_name))
+	# attribute_list.append(('artist_name', get_artist_name))
 	attribute_list.append(('artist_playmeid', get_artist_playmeid))
 	attribute_list.append(('artist_terms', get_artist_terms))
 	attribute_list.append(('artist_terms_freq', get_artist_terms_freq))
@@ -78,19 +104,39 @@ def create_song_record(basedir, ext='.h5'):
 			h5        = open_h5_file_read(f)
 			song_id   = get_song_id(h5)
 
-			print(h5)
-			for i in attribute_list:
-				song_records[song_id.decode("utf-8")][i[0]] = i[1](h5)
-			
-			h5.close()
+			# Make an entry only if the artist name from MSD exists in the gender_names_dict
+			if get_artist_name(h5).decode("utf-8") in gender_names_dict:
+				# For testing
+				print("\n\n\nSong ID: ", song_id.decode("utf-8"))
+
+				for i in attribute_list:
+					if (i[0] == 'gender'):
+						song_records[song_id.decode("utf-8")][i[0]] = i[1](get_artist_name(h5), gender_names_dict)
+					else:
+						song_records[song_id.decode("utf-8")][i[0]] = i[1](h5)
+
+					# For testing
+					print("\n", i[0], ": ", song_records[song_id.decode("utf-8")][i[0]])
+				h5.close()
+
+			else:
+				h5.close()
+				continue
+				
+			# For testing
+			print("\n\n\n")
+
 
 	return song_records
 
 
+
+
 def main():
 	basedir = '../Databases/MSDsub/'
-	# get_titles(basedir, ext='.h5')
-	create_song_record(basedir)
+	song_records = create_song_records(basedir)
+
+
 
 if __name__ == "__main__" :
 	main()
