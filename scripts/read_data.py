@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-import h5py
 from hdf5_getters import *
 import os
 import glob
@@ -21,7 +19,8 @@ attribute_list = []
 
 def create_artist_gender_dict():
 	# extract artist names + corresponding gender info
-	singers_gender_data = pd.read_csv('../Databases/singers_gender.csv', encoding="ISO-8859-1")
+	singers_gender_data = pd.read_csv('../Databases/singers_gender.csv',
+									  encoding="ISO-8859-1")
 	artist_names   = singers_gender_data['artist']
 	artist_gender = singers_gender_data['gender']
 
@@ -35,7 +34,7 @@ def create_artist_gender_dict():
 
 
 def to_csv(songs):
-	with open("songs.csv", 'wb') as f:
+	with open("songs.csv", 'w') as f:
 		for i,att_title in enumerate(attribute_list):
 			if i < len(attribute_list) -1:
 				f.write(att_title[0] + ",")
@@ -60,7 +59,8 @@ def get_artist_gender(artist_name, gender_names_dict):
 
 
 def get_lyric_sentiment(artist_name, song_name):
-	lyrics = get_lyrics(artist_name, song_name)
+	#TODO: Split lyrics into 30 word chunks, and then average sentiment of all chunks
+	lyrics = get_lyrics(str(artist_name), str(song_name))
 	if lyrics != None:
 		return get_sent(lyrics)
 	else:
@@ -100,8 +100,10 @@ def create_song_records(basedir, ext='.h5'):
 	attribute_list.append(('sections_start', get_sections_start))
 	attribute_list.append(('segments_confidence', get_segments_confidence))
 	attribute_list.append(('segments_loudness_max', get_segments_loudness_max))
-	attribute_list.append(('segments_loudness_max_time', get_segments_loudness_max_time))
-	attribute_list.append(('segments_loudness_start', get_segments_loudness_start))
+	attribute_list.append(('segments_loudness_max_time',
+						   get_segments_loudness_max_time))
+	attribute_list.append(('segments_loudness_start',
+						   get_segments_loudness_start))
 	attribute_list.append(('segments_pitches', get_segments_pitches))
 	attribute_list.append(('segments_start', get_segments_start))
 	attribute_list.append(('segments_timbre', get_segments_timbre))
@@ -113,39 +115,50 @@ def create_song_records(basedir, ext='.h5'):
 	attribute_list.append(('tatums_start', get_tatums_start))
 	attribute_list.append(('tempo', get_tempo))
 	attribute_list.append(('time_signature', get_time_signature))
-	attribute_list.append(('time_signature_confidence', get_time_signature_confidence))
+	attribute_list.append(('time_signature_confidence',
+						   get_time_signature_confidence))
 	attribute_list.append(('title', get_title))
 	attribute_list.append(('track_7digitalid', get_track_7digitalid))
 	attribute_list.append(('track_id', get_track_id))
 	attribute_list.append(('year', get_year))
-	attribute_list.append(("sentiment", get_lyric_sentiment))
+	attribute_list.append(('sentiment', get_lyric_sentiment))
 
 	song_records = defaultdict(dict)
-
+	dircounter = 0
+	filecounter = 0
+	attcounter = 0
 	for root, dirs, files in os.walk(basedir):
-		
+		dircounter+=1
+		print("dircounter", dircounter)
 		files = glob.glob(os.path.join(root,'*'+ext))
 
 		for f in files:
+			filecounter+=1
+			print("filecounter",filecounter)
 			h5        = open_h5_file_read(f)
 			song_id   = get_song_id(h5)
 
 			# Make an entry only if the artist name from MSD exists in the gender_names_dict
 			if get_artist_name(h5).decode("utf-8") in gender_names_dict:
 				# For testing
-				print("\n\n\nSong ID: ", song_id.decode("utf-8"))
+				#print("\n\n\nSong ID: ", song_id.decode("utf-8"))
 
 				for i in attribute_list:
+					attcounter+=1
+					print(attcounter, i[0])
 					if (i[0] == 'gender'):
-						song_records[song_id.decode("utf-8")][i[0]] = i[1](get_artist_name(h5), gender_names_dict)
-					elif i[0] == 'sentiment':
 						song_records[song_id.decode("utf-8")][i[0]] = \
-							i[1](get_artist_name(h5), get_title(h5))
+							i[1](get_artist_name(h5), gender_names_dict)
+					elif i[0] == 'sentiment':
+						song_sent = i[1](get_artist_name(h5).decode("utf-8"),
+										 get_title(h5).decode("utf-8"))
+						print(song_sent)
+						song_records[song_id.decode("utf-8")][i[0]] = song_sent
 					else:
 						song_records[song_id.decode("utf-8")][i[0]] = i[1](h5)
 
 					# For testing
-					print("\n", i[0], ": ", song_records[song_id.decode("utf-8")][i[0]])
+					#print("\n", i[0], ": ", song_records[song_id.decode("utf-8")][i[0]])
 				h5.close()
 
 			else:
@@ -157,7 +170,7 @@ def create_song_records(basedir, ext='.h5'):
 
 
 	print(type(song_records),"keys:",  len(song_records.keys()))
-	pp(song_records)
+	# pp(song_records)
 	return song_records
 
 
@@ -167,6 +180,7 @@ def main():
 	prep_sent()
 	basedir = '../Databases/MSDsub/'
 	song_records = create_song_records(basedir)
+	to_csv(song_records)
 
 
 

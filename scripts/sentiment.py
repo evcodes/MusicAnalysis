@@ -14,7 +14,7 @@ from keras import backend as K
 from keras.engine.topology import Layer, InputSpec
 
 #The global constants below are designed for sentiment analysis
-def prep_sent():
+def prep_sent(tok=None):
     global MAX_NB_WORDS, MAX_SEQUENCE_LENGTH, VALIDATION_SPLIT, EMBEDDING_DIM, \
         TOKENIZER, CLASSES, model_test
     MAX_NB_WORDS = 40000  # max no. of words for tokenizer
@@ -23,11 +23,11 @@ def prep_sent():
     EMBEDDING_DIM = 300  # embedding dimensions for word vectors (word2vec/GloVe)
 
     # Open our word tokenizer
-    f = open('tokenizer.pickle', 'rb')
+    f = open('tokenizer.pickle', 'rb') if tok else open('../tokenizer.pickle', 'rb')
     TOKENIZER = pickle.load(f)
     K.clear_session()
     CLASSES = ["neutral", "happy", "sad", "hate", "anger"]
-    model_test = load_model('checkpoint-1.097.h5')
+    model_test = load_model('checkpoint-1.097.h5') if tok else load_model('../checkpoint-1.097.h5')
 
     model_test._make_predict_function()
 
@@ -37,6 +37,7 @@ def get_sent(line):
     Neutrality, Happiness, Angriness, Sadness
     and Hate emotions of speech
     """
+    print("line", line)
     parsedL = []
     parsedL.append(line)
     sequences_test = TOKENIZER.texts_to_sequences(parsedL)
@@ -49,8 +50,11 @@ def get_sent(line):
     y_prob = model_test.predict(data_test)
     return y_prob
 
-def main(line):
+def main(line, tok):
+    prep_sent(tok)
     print(get_sent(line))
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    defaultLine = ""
+    line = sys.argv[1] if len(sys.argv) > 1 else defaultLine
+    main(line, "tokenizer.pickle")

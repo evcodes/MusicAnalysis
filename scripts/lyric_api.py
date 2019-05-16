@@ -9,7 +9,8 @@ def get_lyrics(artist_name, song_name):
         lyrics = lyricwikia.get_lyrics(artist_name, song_name)
         return clean(lyrics)
     except:
-        print("Sorry, " + song_name +" by " +  artist_name + " was not found in lyric database")
+        print("Sorry, " + song_name +" by " +  artist_name +
+              " was not found in lyric database")
         return None
 
-print(get_lyrics("Eminem", "lose yourself"))
+#print(get_lyrics("Eminem", "lose yourself"))
