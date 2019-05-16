@@ -265,6 +265,9 @@ def build_network():
                   metrics=['acc'])
 
     # Store the model as a benchmark
+    tensorboard = callbacks.TensorBoard(log_dir='./logs', histogram_freq=0,
+                                        batch_size=16, write_grads=True,
+                                        write_graph=True)
     model_checkpoints = callbacks.ModelCheckpoint(
         "checkpoint-{val_loss:.3f}.h5", monitor='val_loss', verbose=0,
         save_best_only=True, save_weights_only=False, mode='auto', period=0)
@@ -276,7 +279,8 @@ def build_network():
     model = keras.models.load_model("checkpoint-1.097.h5")
 
     model_log = model.fit(X_TRAIN, Y_TRAIN, validation_data=(X_TEST, Y_TEST),
-                          batch_size=512, epochs=200)
+                          batch_size=512, epochs=200,
+                          callbacks=[tensorboard, model_checkpoints])
 
     pd.DataFrame(model_log.history).to_csv("history-balance.csv")
 
