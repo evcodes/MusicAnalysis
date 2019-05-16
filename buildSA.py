@@ -63,9 +63,7 @@ def step_cyclic(epoch):
         return float(1.0)
 
 
-
-
-#Model Building Functions
+# Model Building Functions
 
 # Reads in and organizes data for NN, partitions data set,
 # initialize core architectural components
@@ -76,14 +74,14 @@ def setup():
         DATA, X_TRAIN, Y_TRAIN, X_TEST, Y_TEST, EMBEDDING_INDEX, \
         EMBEDDING_MATRIX
 
-    #Make sure we're using tensorflow on GPU
+    # Make sure we're using tensorflow on GPU
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
     MAX_NB_WORDS = 40000  # Max # of words for tokenizer
     MAX_SEQUENCE_LENGTH = 30  # Max length of text (words) including padding
     VALIDATION_SPLIT = 0.2  # Validation partition ratio
     EMBEDDING_DIM = 300  # Embedding dimension for word vectors (word2vec/GloVe)
-    #Stanford Global Vectors for word representation
+    # Stanford Global Vectors for word representation
     GLOVE_DIR = "Databases/glove/glove.42B." + str(
         EMBEDDING_DIM) + "d.txt"
 
@@ -109,7 +107,8 @@ def setup():
     print("SEQ shape", len(SEQ))
     WORD_INDEX = TOKENIZER.word_index
     print('Unique tokens:', len(WORD_INDEX))
-    DATA_INT = pad_sequences(SEQ, padding='pre', maxlen=(MAX_SEQUENCE_LENGTH-5))
+    DATA_INT = pad_sequences(SEQ, padding='pre',
+                             maxlen=(MAX_SEQUENCE_LENGTH - 5))
     DATA = pad_sequences(DATA_INT, padding='post', maxlen=MAX_SEQUENCE_LENGTH)
 
     LABELS = to_categorical(
@@ -128,7 +127,7 @@ def setup():
     Y_TRAIN = LABELS[:-nb_validation_samples]
     X_TEST = DATA[-nb_validation_samples:]
     Y_TEST = LABELS[-nb_validation_samples:]
-    print("X_Train shape", X_TRAIN.shape,"Y_Train shape", Y_TRAIN.shape,
+    print("X_Train shape", X_TRAIN.shape, "Y_Train shape", Y_TRAIN.shape,
           "X_Test shape", X_TEST.shape, "Y_Test shape", Y_TEST.shape)
     print('Collected Partitions:')
     EMBEDDING_INDEX = {}
@@ -151,9 +150,10 @@ def setup():
             EMBEDDING_MATRIX[i] = embedding_vector
     print("Completed Setup!")
 
+
 # Put together the actual layout of the neural net, and train and test it
 def build_network():
-    #Without this tensorflow doesn't play nice on GPU
+    # Without this tensorflow doesn't play nice on GPU
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow GPU memory
     config.log_device_placement = True  # to log device placement
@@ -256,7 +256,7 @@ def build_network():
     l_dense = Dense(26, activation='relu')(l_flat)
     preds = Dense(5, activation='softmax')(l_dense)
 
-    #OPtimize and store the model for later benchmarking
+    # OPtimize and store the model for later benchmarking
     model = Model(sequence_input, preds)
     adadelta = optimizers.Adadelta(lr=0.9, rho=0.95, epsilon=None, decay=0.002)
     lr_metric = get_lr_metric(adadelta)

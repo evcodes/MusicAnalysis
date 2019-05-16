@@ -34,7 +34,7 @@ def create_artist_gender_dict():
 
 
 def to_csv(songs):
-	with open("songs.csv", 'w') as f:
+	with open("../Databases/songs.csv", 'w') as f:
 		for i,att_title in enumerate(attribute_list):
 			if i < len(attribute_list) -1:
 				f.write(att_title[0] + ",")
