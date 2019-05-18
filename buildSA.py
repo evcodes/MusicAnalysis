@@ -63,6 +63,15 @@ def step_cyclic(epoch):
         return float(1.0)
 
 
+def get_max_checkpoint():
+    fnames = sorted([(float(fname[fname.find("-")+1:
+                            fname.find(".", fname.find("-")+3)]), fname)
+                     for fname in os.listdir('.')
+                     if fname.startswith("checkpoint_val_acc-")])
+    print(fnames)
+    return fnames[-1]
+
+
 # Model Building Functions
 
 # Reads in and organizes data for NN, partitions data set,
@@ -269,17 +278,19 @@ def build_network():
                                         batch_size=16, write_grads=True,
                                         write_graph=True)
     model_checkpoints = callbacks.ModelCheckpoint(
-        "checkpoint-{val_loss:.3f}.h5", monitor='val_loss', verbose=0,
+        "checkpoint_val_acc-{val_acc:.4f}.h5", monitor='val_acc', verbose=1,
         save_best_only=True, save_weights_only=False, mode='auto', period=0)
     lr_schedule = callbacks.LearningRateScheduler(boost)
 
     model.summary()
+    #TODO: Compare this model to the best checkpoint
     model.save('CNNN_LSTM.h5')
 
-    model = keras.models.load_model("checkpoint-1.097.h5")
+    best_so_far = get_max_checkpoint()
+    model = keras.models.load_model(best_so_far[1])
 
     model_log = model.fit(X_TRAIN, Y_TRAIN, validation_data=(X_TEST, Y_TEST),
-                          batch_size=512, epochs=200,
+                          batch_size=1024, epochs=100,
                           callbacks=[tensorboard, model_checkpoints])
 
     pd.DataFrame(model_log.history).to_csv("history-balance.csv")
@@ -289,7 +300,10 @@ def build_network():
 
     classes = ["neutral", "happy", "sad", "hate", "anger"]
 
-    model_test = load_model('best_weights.h5')
+    # Select the model with the greatest validation accuracy, to preserve
+    # accuracy, but prevent over fitting
+    model_to_use = get_max_checkpoint()
+    model_test = load_model(model_to_use[1])
     Y_test = np.argmax(Y_TEST, axis=1)  # Convert one-hot to index
     y_pred = model_test.predict(X_TEST)
     y_pred_class = np.argmax(y_pred, axis=1)
@@ -334,7 +348,7 @@ def build_network():
 
     plt.figure(figsize=(20, 10))
     plot_confusion_matrix(cnf_matrix, labels=classes)
-
+    plt.show()
     # precision = true_pos / (true_pos + false_pos)
     # recall = true_pos / (true_pos + false_neg)
 

@@ -6,6 +6,7 @@ from collections import defaultdict
 from pprint import pprint as pp
 from lyric_api import get_lyrics
 from sentiment import get_sent, prep_sent
+import numpy as np
 
 
 # Things we need from other databases:
@@ -59,12 +60,21 @@ def get_artist_gender(artist_name, gender_names_dict):
 
 
 def get_lyric_sentiment(artist_name, song_name):
-	#TODO: Split lyrics into 30 word chunks, and then average sentiment of all chunks
-	lyrics = get_lyrics(str(artist_name), str(song_name))
-	if lyrics != None:
-		return get_sent(lyrics)
-	else:
-		return [0,0,0,0,0]
+    lyrics = get_lyrics(str(artist_name), str(song_name))
+    print(lyrics)
+    if lyrics != None:
+        lyric_list = [i for i in lyrics.split() if i.isalnum()]
+        lyric_len = len(lyric_list)
+        sent = []
+        for i in range((lyric_len // 30) + 1):
+            lyr = lyric_list[30 * i:min((30 * i) + 30, lyric_len)]
+            lyr = " ".join(lyr)
+            sent.append(get_sent(lyr))
+
+        result = [np.mean(k) for k in zip(*sent)]
+        return result
+    else:
+        return [0, 0, 0, 0, 0]
 
 
 # map artist names and genders to all attribute_lists from Million Songs into one dictionary

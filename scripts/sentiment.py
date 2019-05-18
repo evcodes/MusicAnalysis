@@ -13,6 +13,19 @@ from keras.models import Model
 from keras import backend as K
 from keras.engine.topology import Layer, InputSpec
 
+
+
+def get_max_checkpoint(tok):
+    model_dir = os.listdir('.') if tok else os.listdir("../")
+    fnames = sorted([(float(fname[fname.find("-")+1:
+                            fname.find(".", fname.find("-")+3)]), fname)
+                     for fname in model_dir
+                     if fname.startswith("checkpoint_val_acc-")])
+    print(fnames)
+    return fnames[-1]
+
+
+
 #The global constants below are designed for sentiment analysis
 def prep_sent(tok=None):
     global MAX_NB_WORDS, MAX_SEQUENCE_LENGTH, VALIDATION_SPLIT, EMBEDDING_DIM, \
@@ -27,9 +40,12 @@ def prep_sent(tok=None):
     TOKENIZER = pickle.load(f)
     K.clear_session()
     CLASSES = ["neutral", "happy", "sad", "hate", "anger"]
-    model_test = load_model('checkpoint-1.097.h5') if tok else load_model('../checkpoint-1.097.h5')
-
+    best_model = get_max_checkpoint(tok)
+    model_test = load_model(best_model)
     model_test._make_predict_function()
+
+
+
 
 def get_sent(line):
     """ Given an input line runs sentiment
