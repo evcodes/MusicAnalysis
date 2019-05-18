@@ -120,8 +120,7 @@ def setup():
                              maxlen=(MAX_SEQUENCE_LENGTH - 5))
     DATA = pad_sequences(DATA_INT, padding='post', maxlen=MAX_SEQUENCE_LENGTH)
 
-    LABELS = to_categorical(
-        np.asarray(LABELS))  # convert to one-hot encoding vectors
+    LABELS = to_categorical(np.asarray(LABELS))# make one-hot encoding vectors
     print('Shape of data:', DATA.shape)
     print('Shape of label:', LABELS.shape)
 
@@ -148,14 +147,14 @@ def setup():
         word = values[0]
         EMBEDDING_INDEX[word] = np.asarray(values[1:], dtype='float32')
     f.close()
-    print("Done.\n[+] Proceeding with Embedding Matrix...", end="")
+    print("Done.\n Proceeding with Embedding Matrix...", end="")
 
     # Create embedding layer matrix
     EMBEDDING_MATRIX = np.random.random((len(WORD_INDEX) + 1, EMBEDDING_DIM))
     for word, i in WORD_INDEX.items():
         embedding_vector = EMBEDDING_INDEX.get(word)
         if embedding_vector is not None:
-            # words not found in embedding index will be all-zeros.
+            # words not found in embedding index will be zeroed.
             EMBEDDING_MATRIX[i] = embedding_vector
     print("Completed Setup!")
 
@@ -167,8 +166,7 @@ def build_network():
     config.gpu_options.allow_growth = True  # dynamically grow GPU memory
     config.log_device_placement = True  # to log device placement
     sess = tf.Session(config=config)
-    set_session(
-        sess)  # set this TensorFlow session as the default session for Keras
+    set_session(sess)  # set this TensorFlow session as the default for Keras
 
     # Create a second embedding layer matrix, this one is dynamic, the other is
     # static, which allows for learning specific embeddings, while also
@@ -177,7 +175,7 @@ def build_network():
     for word, i in WORD_INDEX.items():
         embedding_vector = EMBEDDING_INDEX.get(word)
         if embedding_vector is not None:
-            # words not found in embedding index will be all-zeros.
+            # words not found in embedding index will be zeroed.
             embedding_matrix_ns[i] = embedding_vector
     print("Embedding matrix 2 Completed!")
 
@@ -186,79 +184,77 @@ def build_network():
     sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
 
     # static channel
-    embedding_layer_frozen = Embedding(len(WORD_INDEX) + 1,
-                                       EMBEDDING_DIM,
+    embedding_layer_frozen = Embedding(len(WORD_INDEX) + 1, EMBEDDING_DIM,
                                        weights=[EMBEDDING_MATRIX],
                                        input_length=MAX_SEQUENCE_LENGTH,
                                        trainable=False)
     embedded_sequences_frozen = embedding_layer_frozen(sequence_input)
 
     # non-static channel
-    embedding_layer_train = Embedding(len(WORD_INDEX) + 1,
-                                      EMBEDDING_DIM,
+    embedding_layer_train = Embedding(len(WORD_INDEX) + 1, EMBEDDING_DIM,
                                       weights=[embedding_matrix_ns],
                                       input_length=MAX_SEQUENCE_LENGTH,
                                       trainable=True)
     embedded_sequences_train = embedding_layer_train(sequence_input)
 
     # First Half: Long Short-Term Memory > Convolutional Neural Net
-    l_lstm1f = Bidirectional(
+    lstm_f = Bidirectional(
         LSTM(6, return_sequences=True, dropout=0.3, recurrent_dropout=0.0))(
         embedded_sequences_frozen)
-    l_lstm1t = Bidirectional(
+    lstm_t = Bidirectional(
         LSTM(6, return_sequences=True, dropout=0.3, recurrent_dropout=0.0))(
         embedded_sequences_train)
-    l_lstm1 = Concatenate(axis=1)([l_lstm1f, l_lstm1t])
+    lstm_b = Concatenate(axis=1)([lstm_f, lstm_t])
 
     # Build CNN to attach to LSTM
-    l_conv_2 = Conv1D(filters=24, kernel_size=2, activation='relu')(l_lstm1)
-    l_conv_2 = Dropout(0.3)(l_conv_2)
-    l_conv_3 = Conv1D(filters=24, kernel_size=3, activation='relu')(l_lstm1)
-    l_conv_3 = Dropout(0.3)(l_conv_3)
-    l_conv_4 = Conv1D(filters=24, kernel_size=5, activation='relu', )(l_lstm1)
-    l_conv_4 = Dropout(0.3)(l_conv_4)
-    l_conv_5 = Conv1D(filters=24, kernel_size=6, activation='relu',
-                      kernel_regularizer=regularizers.l2(0.0001))(l_lstm1)
-    l_conv_5 = Dropout(0.3)(l_conv_5)
-    l_conv_6 = Conv1D(filters=24, kernel_size=8, activation='relu',
-                      kernel_regularizer=regularizers.l2(0.0001))(l_lstm1)
-    l_conv_6 = Dropout(0.3)(l_conv_6)
+    conv_2 = Conv1D(filters=24, kernel_size=2, activation='relu')(lstm_b)
+    conv_2 = Dropout(0.3)(conv_2)
+    conv_3 = Conv1D(filters=24, kernel_size=3, activation='relu')(lstm_b)
+    conv_3 = Dropout(0.3)(conv_3)
+    conv_4 = Conv1D(filters=24, kernel_size=5, activation='relu', )(lstm_b)
+    conv_4 = Dropout(0.3)(conv_4)
+    conv_5 = Conv1D(filters=24, kernel_size=6, activation='relu',
+                      kernel_regularizer=regularizers.l2(0.0001))(lstm_b)
+    conv_5 = Dropout(0.3)(conv_5)
+    conv_6 = Conv1D(filters=24, kernel_size=8, activation='relu',
+                      kernel_regularizer=regularizers.l2(0.0001))(lstm_b)
+    conv_6 = Dropout(0.3)(conv_6)
 
-    conv_1 = [l_conv_5, l_conv_4, l_conv_6, l_conv_2, l_conv_3]
+    conv_1 = [conv_5, conv_4, conv_6, conv_2, conv_3]
 
-    l_lstm_c = Concatenate(axis=1)(conv_1)
+    lstm_conv = Concatenate(axis=1)(conv_1)
 
     # Second half: Convolution Neural Net > Long Short-Term Memory
-    l_conv_4f = Conv1D(filters=12, kernel_size=4, activation='relu',
+    conv_4f = Conv1D(filters=12, kernel_size=4, activation='relu',
                        kernel_regularizer=regularizers.l2(0.0001))(
         embedded_sequences_frozen)
-    l_conv_4f = Dropout(0.3)(l_conv_4f)
-    l_conv_4t = Conv1D(filters=12, kernel_size=4, activation='relu',
+    conv_4f = Dropout(0.3)(conv_4f)
+    conv_4t = Conv1D(filters=12, kernel_size=4, activation='relu',
                        kernel_regularizer=regularizers.l2(0.0001))(
         embedded_sequences_train)
-    l_conv_4t = Dropout(0.3)(l_conv_4t)
-    l_conv_3f = Conv1D(filters=12, kernel_size=3, activation='relu', )(
+    conv_4t = Dropout(0.3)(conv_4t)
+    conv_3f = Conv1D(filters=12, kernel_size=3, activation='relu', )(
         embedded_sequences_frozen)
-    l_conv_3f = Dropout(0.3)(l_conv_3f)
-    l_conv_3t = Conv1D(filters=12, kernel_size=3, activation='relu', )(
+    conv_3f = Dropout(0.3)(conv_3f)
+    conv_3t = Conv1D(filters=12, kernel_size=3, activation='relu', )(
         embedded_sequences_train)
-    l_conv_3t = Dropout(0.3)(l_conv_3t)
-    l_conv_2f = Conv1D(filters=12, kernel_size=2, activation='relu')(
+    conv_3t = Dropout(0.3)(conv_3t)
+    conv_2f = Conv1D(filters=12, kernel_size=2, activation='relu')(
         embedded_sequences_frozen)
-    l_conv_2f = Dropout(0.3)(l_conv_2f)
-    l_conv_2t = Conv1D(filters=12, kernel_size=2, activation='relu')(
+    conv_2f = Dropout(0.3)(conv_2f)
+    conv_2t = Conv1D(filters=12, kernel_size=2, activation='relu')(
         embedded_sequences_train)
-    l_conv_2t = Dropout(0.3)(l_conv_2t)
-    conv_2 = [l_conv_4f, l_conv_4t, l_conv_3f, l_conv_3t, l_conv_2f, l_conv_2t]
+    conv_2t = Dropout(0.3)(conv_2t)
+    conv_2c = [conv_4f, conv_4t, conv_3f, conv_3t, conv_2f, conv_2t]
 
     # LSTM into CNN
-    l_merge_2 = Concatenate(axis=1)(conv_2)
+    l_merge_2 = Concatenate(axis=1)(conv_2c)
     l_c_lstm = Bidirectional(
         LSTM(12, return_sequences=True, dropout=0.3, recurrent_dropout=0.0))(
         l_merge_2)
 
     # Merge the 2 halves
-    l_merge = Concatenate(axis=1)([l_lstm_c, l_c_lstm])
+    l_merge = Concatenate(axis=1)([lstm_conv, l_c_lstm])
     l_pool = MaxPooling1D(4)(l_merge)
     l_drop = Dropout(0.5)(l_pool)
     l_flat = Flatten()(l_drop)

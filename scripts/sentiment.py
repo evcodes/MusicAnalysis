@@ -17,8 +17,9 @@ from keras.engine.topology import Layer, InputSpec
 
 def get_max_checkpoint(tok):
     model_dir = os.listdir('.') if tok else os.listdir("../")
+    prefix = "" if tok else "../"
     fnames = sorted([(float(fname[fname.find("-")+1:
-                            fname.find(".", fname.find("-")+3)]), fname)
+                            fname.find(".", fname.find("-")+3)]), prefix+fname)
                      for fname in model_dir
                      if fname.startswith("checkpoint_val_acc-")])
     print(fnames)
@@ -29,7 +30,7 @@ def get_max_checkpoint(tok):
 #The global constants below are designed for sentiment analysis
 def prep_sent(tok=None):
     global MAX_NB_WORDS, MAX_SEQUENCE_LENGTH, VALIDATION_SPLIT, EMBEDDING_DIM, \
-        TOKENIZER, CLASSES, model_test
+        TOKENIZER, CLASSES, MODEL_TEST
     MAX_NB_WORDS = 40000  # max no. of words for tokenizer
     MAX_SEQUENCE_LENGTH = 30  # max length of text (words) including padding
     VALIDATION_SPLIT = 0.2
@@ -41,8 +42,8 @@ def prep_sent(tok=None):
     K.clear_session()
     CLASSES = ["neutral", "happy", "sad", "hate", "anger"]
     best_model = get_max_checkpoint(tok)
-    model_test = load_model(best_model)
-    model_test._make_predict_function()
+    MODEL_TEST = load_model(best_model[1])
+    MODEL_TEST._make_predict_function()
 
 
 
@@ -53,7 +54,6 @@ def get_sent(line):
     Neutrality, Happiness, Angriness, Sadness
     and Hate emotions of speech
     """
-    print("line", line)
     parsedL = []
     parsedL.append(line)
     sequences_test = TOKENIZER.texts_to_sequences(parsedL)
@@ -63,7 +63,8 @@ def get_sent(line):
     data_test = pad_sequences(data_int_t, padding='post',
                               maxlen=MAX_SEQUENCE_LENGTH)
 
-    y_prob = model_test.predict(data_test)
+    y_prob = MODEL_TEST.predict(data_test)
+    print(y_prob)
     return y_prob
 
 def main(line, tok):
