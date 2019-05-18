@@ -25,7 +25,7 @@ def clean_df(dataframe):
 def test_model(model, X, Y):
     return 0
 
-URL = "OUR CSV URL"
+URL = "https://docs.google.com/spreadsheets/d/197gXGzGUupdhpf71XfsWZtpHlmBRrpvg69taNCDwKVg/export?format=csv&gid=1500097129"
 cols = [] # Our attribute list
 
 df = pd.read_csv(URL, names=cols, sep=',')
@@ -33,7 +33,7 @@ df = pd.read_csv(URL, names=cols, sep=',')
 
 feats  = clean_df(df)
 target = feats[:, 'gender'] #-1 until we know what column gender will be in
-SA = feats[:, 'SA tuple'] #same as above, this is for the sentiment analysis tuple
+SA = feats[:, 'sentiment'] #same as above, this is for the sentiment analysis tuple
 feats = np.delete(feats, 'gender', 1)
 
 SAX_train, SAX_test, SAY_train, SAY_test = train_test_split(SA, target)

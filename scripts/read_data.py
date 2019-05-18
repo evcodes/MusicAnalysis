@@ -15,6 +15,29 @@ import numpy as np
 # billboard_date
 # lyrical_sa
 attribute_list = []
+att_names = ['title',
+             'artist_name',
+             'gender',
+             'danceability',
+             'duration',
+             'end_of_fade_in',
+             'energy',
+             'key',
+             'key_confidence',
+             'loudness',
+             'mode',
+             'mode_confidence',
+             'song_hotttnesss',
+             'start_of_fade_out',
+             'tempo',
+             'time_signature',
+             'time_signature_confidence',
+             'year',
+             "neutral",
+             "happy",
+             "sad",
+             "hate",
+             "anger"]
 
 
 def create_artist_gender_dict():
@@ -40,12 +63,20 @@ def to_csv(songs):
             else:
                 f.write(att_title[0] + "\n")
         for song in songs.keys():
+            print("\n\n\n\n\n")
             atts = songs[song].items()
             for i, att in enumerate(atts):
+                att_val = att[1]
+                try:
+                    print("b4", att[0], type(att_val), att_val)
+                    att_val = att_val.decode("utf-8")
+                    print(att_val)
+                except:
+                    pass
                 if i < len(atts) - 1:
-                    f.write(att + ",")
+                    f.write(str(att_val) + ",")
                 else:
-                    f.write(att + "\n")
+                    f.write(str(att_val) + "\n")
 
 
 def get_artist_gender(artist_name, gender_names_dict):
@@ -79,20 +110,21 @@ def get_lyric_sentiment(artist_name, song_name):
 def create_song_records(basedir, ext='.h5'):
     gender_names_dict = create_artist_gender_dict()
 
+    attribute_list.append(('title', get_title))
     attribute_list.append(('artist_name', get_artist_name))
     attribute_list.append(('gender', get_artist_gender))
-    attribute_list.append(('artist_mbid', get_artist_mbid))
-    attribute_list.append(('artist_mbtags', get_artist_mbtags))
-    attribute_list.append(('artist_mbtags_count', get_artist_mbtags_count))
+    # attribute_list.append(('artist_mbid', get_artist_mbid))
+    # attribute_list.append(('artist_mbtags', get_artist_mbtags))
+    # attribute_list.append(('artist_mbtags_count', get_artist_mbtags_count))
     # attribute_list.append(('artist_name', get_artist_name))
-    attribute_list.append(('artist_playmeid', get_artist_playmeid))
-    attribute_list.append(('artist_terms', get_artist_terms))
-    attribute_list.append(('artist_terms_freq', get_artist_terms_freq))
-    attribute_list.append(('audio_md5', get_audio_md5))
-    attribute_list.append(('bars_confidence', get_bars_confidence))
-    attribute_list.append(('bars_start', get_bars_start))
-    attribute_list.append(('beats_confidence', get_beats_confidence))
-    attribute_list.append(('beats_start', get_beats_start))
+    # attribute_list.append(('artist_playmeid', get_artist_playmeid))
+    # attribute_list.append(('artist_terms', get_artist_terms))
+    # attribute_list.append(('artist_terms_freq', get_artist_terms_freq))
+    # attribute_list.append(('audio_md5', get_audio_md5))
+    # attribute_list.append(('bars_confidence', get_bars_confidence))
+    # attribute_list.append(('bars_start', get_bars_start))
+    # attribute_list.append(('beats_confidence', get_beats_confidence))
+    # attribute_list.append(('beats_start', get_beats_start))
     attribute_list.append(('danceability', get_danceability))
     attribute_list.append(('duration', get_duration))
     attribute_list.append(('end_of_fade_in', get_end_of_fade_in))
@@ -102,31 +134,30 @@ def create_song_records(basedir, ext='.h5'):
     attribute_list.append(('loudness', get_loudness))
     attribute_list.append(('mode', get_mode))
     attribute_list.append(('mode_confidence', get_mode_confidence))
-    attribute_list.append(('release_7digitalid', get_release_7digitalid))
-    attribute_list.append(('sections_confidence', get_sections_confidence))
-    attribute_list.append(('sections_start', get_sections_start))
-    attribute_list.append(('segments_confidence', get_segments_confidence))
-    attribute_list.append(('segments_loudness_max', get_segments_loudness_max))
-    attribute_list.append(('segments_loudness_max_time',
-                           get_segments_loudness_max_time))
-    attribute_list.append(('segments_loudness_start',
-                           get_segments_loudness_start))
-    attribute_list.append(('segments_pitches', get_segments_pitches))
-    attribute_list.append(('segments_start', get_segments_start))
-    attribute_list.append(('segments_timbre', get_segments_timbre))
-    attribute_list.append(('similar_artists', get_similar_artists))
+    # attribute_list.append(('release_7digitalid', get_release_7digitalid))
+    # attribute_list.append(('sections_confidence', get_sections_confidence))
+    # attribute_list.append(('sections_start', get_sections_start))
+    # attribute_list.append(('segments_confidence', get_segments_confidence))
+    # attribute_list.append(('segments_loudness_max', get_segments_loudness_max))
+    # attribute_list.append(('segments_loudness_max_time',
+    #                        get_segments_loudness_max_time))
+    # attribute_list.append(('segments_loudness_start',
+    #                        get_segments_loudness_start))
+    # attribute_list.append(('segments_pitches', get_segments_pitches))
+    # attribute_list.append(('segments_start', get_segments_start))
+    # attribute_list.append(('segments_timbre', get_segments_timbre))
+    # attribute_list.append(('similar_artists', get_similar_artists))
     attribute_list.append(('song_hotttnesss', get_song_hotttnesss))
-    attribute_list.append(('song_id', get_song_id))
+    # attribute_list.append(('song_id', get_song_id))
     attribute_list.append(('start_of_fade_out', get_start_of_fade_out))
-    attribute_list.append(('tatums_confidence', get_tatums_confidence))
-    attribute_list.append(('tatums_start', get_tatums_start))
+    # attribute_list.append(('tatums_confidence', get_tatums_confidence))
+    # attribute_list.append(('tatums_start', get_tatums_start))
     attribute_list.append(('tempo', get_tempo))
     attribute_list.append(('time_signature', get_time_signature))
     attribute_list.append(('time_signature_confidence',
                            get_time_signature_confidence))
-    attribute_list.append(('title', get_title))
-    attribute_list.append(('track_7digitalid', get_track_7digitalid))
-    attribute_list.append(('track_id', get_track_id))
+    # attribute_list.append(('track_7digitalid', get_track_7digitalid))
+    # attribute_list.append(('track_id', get_track_id))
     attribute_list.append(('year', get_year))
     attribute_list.append(('sentiment', get_lyric_sentiment))
 
@@ -138,30 +169,40 @@ def create_song_records(basedir, ext='.h5'):
         dircounter += 1
         print("dircounter", dircounter)
         files = glob.glob(os.path.join(root, '*' + ext))
-
+        if filecounter > 100:
+            break
         for f in files:
             filecounter += 1
             print("filecounter", filecounter)
             h5 = open_h5_file_read(f)
             song_id = get_song_id(h5)
-
+            if filecounter > 100:
+                break
             # Make an entry only if the artist name from MSD exists in the gender_names_dict
-            if get_artist_name(h5).decode("utf-8") in gender_names_dict:
+            artist_name = get_artist_name(h5).decode("utf-8")
+            if artist_name in gender_names_dict:
                 # For testing
                 # print("\n\n\nSong ID: ", song_id.decode("utf-8"))
-
+                song_id = song_id.decode("utf-8")
                 for i in attribute_list:
                     attcounter += 1
                     print(attcounter, i[0])
                     if (i[0] == 'gender'):
-                        song_records[song_id.decode("utf-8")][i[0]] = \
+                        song_records[song_id][i[0]] = \
                             i[1](get_artist_name(h5), gender_names_dict)
                     elif i[0] == 'sentiment':
                         song_sent = i[1](get_artist_name(h5).decode("utf-8"),
                                          get_title(h5).decode("utf-8"))
-                        song_records[song_id.decode("utf-8")][i[0]] = song_sent
+                        song_records[song_id]["neutral"] = song_sent[0]
+                        song_records[song_id]["happy"] = song_sent[1]
+                        song_records[song_id]["sad"] = song_sent[2]
+                        song_records[song_id]["hate"] = song_sent[3]
+                        song_records[song_id]["anger"] = song_sent[4]
+
+                    elif i[0] == "artist_name":
+                        song_records[song_id][i[0]] = artist_name
                     else:
-                        song_records[song_id.decode("utf-8")][i[0]] = i[1](h5)
+                        song_records[song_id][i[0]] = i[1](h5)
 
                 # For testing
                 # print("\n", i[0], ": ", song_records[song_id.decode("utf-8")][i[0]])
@@ -175,7 +216,7 @@ def create_song_records(basedir, ext='.h5'):
             print("\n\n\n")
 
     print(type(song_records), "keys:", len(song_records.keys()))
-    # pp(song_records)
+    pp(song_records)
     return song_records
 
 
@@ -183,7 +224,12 @@ def main():
     prep_sent()
     basedir = '../Databases/MSDsub/'
     song_records = create_song_records(basedir)
-    to_csv(song_records)
+    cols = att_names
+    songs_df = pd.DataFrame.from_dict(song_records, columns=cols,
+                                      orient='index')
+    pp(songs_df)
+    songs_df.to_csv("../Databases/songs.csv")
+    # to_csv(song_records)
 
 
 if __name__ == "__main__":
