@@ -169,15 +169,11 @@ def create_song_records(basedir, ext='.h5'):
         dircounter += 1
         print("dircounter", dircounter)
         files = glob.glob(os.path.join(root, '*' + ext))
-        if filecounter > 100:
-            break
         for f in files:
             filecounter += 1
             print("filecounter", filecounter)
             h5 = open_h5_file_read(f)
             song_id = get_song_id(h5)
-            if filecounter > 100:
-                break
             # Make an entry only if the artist name from MSD exists in the gender_names_dict
             artist_name = get_artist_name(h5).decode("utf-8")
             if artist_name in gender_names_dict:
@@ -201,6 +197,8 @@ def create_song_records(basedir, ext='.h5'):
 
                     elif i[0] == "artist_name":
                         song_records[song_id][i[0]] = artist_name
+                    elif i[0] == "title":
+                        song_records[song_id][i[0]] = i[1](h5).decode("utf-8")
                     else:
                         song_records[song_id][i[0]] = i[1](h5)
 
