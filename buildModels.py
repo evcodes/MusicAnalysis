@@ -9,6 +9,8 @@ from sklearn import tree, metrics
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.ensemble import RandomForestClassifier as RFC
+
 from pprint import pprint as pp
 # import warnings
 # warnings.filterwarnings('always')
@@ -158,6 +160,7 @@ pp(feats)
 # print("\nSA Shape:", SA.shape)
 # print("\nTarget Shape:", target.shape)
 
+#TODO: (Maybe) use cross_val_scoring instead for a better training set
 SAX_train, SAX_test, SAY_train, SAY_test = train_test_split(SA, target)
 allX_train, allX_test, allY_train, allY_test = train_test_split(feats, target)
 
@@ -180,13 +183,23 @@ all_kNN = KNeighborsClassifier()
 SA_kNN = KNeighborsClassifier()
 all_Tree = tree.DecisionTreeClassifier()
 SA_Tree = tree.DecisionTreeClassifier()
+all_RandFor = RFC(n_estimators=25)
+SA_RandFor = RFC(n_estimators=25)
 
 all_kNN.fit(allX_train, allY_train)
 SA_kNN.fit(SAX_train, SAY_train)
 all_Tree.fit(allX_train, allY_train)
 SA_Tree.fit(SAX_train, SAY_train)
+all_RandFor.fit(allX_train, allY_train)
+SA_RandFor.fit(SAX_train, SAY_train)
 
-model_tuples = [(all_Tree, 'All Tree Classifier'), (SA_Tree, 'SA Tree Classifier'), (all_kNN, "All kNN Classfier"), (SA_kNN, 'SA kNN Classifier')]
+model_tuples = [(all_Tree, 'All Tree Classifier'),
+                (SA_Tree, 'SA Tree Classifier'),
+                (all_kNN, "All kNN Classfier"),
+                (SA_kNN, 'SA kNN Classifier'),
+                (all_RandFor, "All Random Forest Classifier"),
+                (SA_RandFor, 'SA Random Forest Classifier')]
+
 
 for mod in model_tuples:
     if mod[1].startswith("All"):
@@ -267,5 +280,13 @@ for i, feat_imp in enumerate(all_Tree.feature_importances_):
 
 print("\nSA Tree feature importance:")
 for i, feat_imp in enumerate(SA_Tree.feature_importances_):
+    print(emotions[i], ":",  feat_imp)
+
+print("\nAll Random Forest feature Importance:")
+for i, feat_imp in enumerate(all_RandFor.feature_importances_):
+    print(feats_list[i], ":",  feat_imp)
+
+print("\nSA Random Forest feature importance:")
+for i, feat_imp in enumerate(SA_RandFor.feature_importances_):
     print(emotions[i], ":",  feat_imp)
 
