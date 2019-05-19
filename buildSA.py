@@ -291,6 +291,8 @@ def build_network():
 
     pd.DataFrame(model_log.history).to_csv("history-balance.csv")
 
+
+def test_network():
     with open('tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
@@ -298,8 +300,9 @@ def build_network():
 
     # Select the model with the greatest validation accuracy, to preserve
     # accuracy, but prevent over fitting
-    model_to_use = get_max_checkpoint()
-    model_test = load_model(model_to_use[1])
+
+    model_to_use = get_max_checkpoint()[1]
+    model_test = load_model(model_to_use)
     Y_test = np.argmax(Y_TEST, axis=1)  # Convert one-hot to index
     y_pred = model_test.predict(X_TEST)
     y_pred_class = np.argmax(y_pred, axis=1)
@@ -354,7 +357,7 @@ def build_network():
                                maxlen=(MAX_SEQUENCE_LENGTH - 5))
     data_test = pad_sequences(data_int_t, padding='post',
                               maxlen=MAX_SEQUENCE_LENGTH)
-    y_prob = model.predict(data_test)
+    y_prob = model_test.predict(data_test)
     for n, prediction in enumerate(y_prob):
         pred = y_prob.argmax(axis=-1)[n]
         print(test_text[n], "\nPrediction:", classes[pred], "\n")
@@ -363,7 +366,7 @@ def build_network():
 def main():
     setup()
     build_network()
-
+    test_network()
 
 if __name__ == '__main__':
     main()
