@@ -9,6 +9,7 @@ from sklearn import tree, metrics
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import roc_curve, roc_auc_score
+from pprint import pprint as pp
 # import warnings
 # warnings.filterwarnings('always')
 
@@ -80,7 +81,7 @@ def test_model(model_tuple, X, Y):
     plt.ylabel('TPR')
     plt.title(model_name + ' ROC Curve')
     plt.legend(loc = "lower right")
-    # plt.show()
+    plt.show()
 
     return 0
 
@@ -110,25 +111,49 @@ cols = ['title',
         "hate",
         "anger"] # Our attribute list
 
-df = pd.read_csv(URL, names=cols, sep=',')
+feats_list = ['danceability',
+        'duration',
+        'end_of_fade_in',
+        'energy',
+        'key',
+        'key_confidence',
+        'loudness',
+        'mode',
+        'mode_confidence',
+        'song_hotttnesss',
+        'start_of_fade_out',
+        'tempo',
+        'time_signature',
+        'time_signature_confidence',
+        'year',
+        "neutral",
+        "happy",
+        "sad",
+        "hate",
+        "anger"]
 
-print(df)
+emotions = ["neutral", "happy", "sad", "hate", "anger"]
+
+
+df = pd.read_csv(URL, names=cols, sep=',', header=0)
+
+pp(df)
 print(df.shape)
 
 feats  = clean_df(df)
 
 # print("Feats:", feats)
-
+print(feats.shape)
 target = feats[:, 0] # gender column
-target = np.delete(target, 0, 0)
-# print("\n\nTarget:", target)
+feats = np.delete(feats, 0, 1) #Remove target col
+print("target", end=" ")
+pp(target)
 SA = feats[:, -5:] # last 5 columns for SA
-SA = np.delete(SA, 0, 0)
+# SA = np.delete(SA, 0, 0)
 # print("\n\nSA:", SA)
-feats = np.delete(feats, 2, 1) # delete target column
-feats = np.delete(feats, 0, 0) # delete row containing column names
-# print("\n\nUpdated Feats:", feats)
-
+# feats = np.delete(feats, 0, 0) # delete row containing column names
+print("updated feats", end=" ")
+pp(feats)
 # print("\nFeats Shape:", feats.shape)
 # print("\nSA Shape:", SA.shape)
 # print("\nTarget Shape:", target.shape)
@@ -151,18 +176,20 @@ allY_train = allY_train.astype(float)
 SAY_test = SAY_test.astype(float)
 SAY_train = SAY_train.astype(float)
 
-kNN = KNeighborsClassifier()
+all_kNN = KNeighborsClassifier()
+SA_kNN = KNeighborsClassifier()
 all_Tree = tree.DecisionTreeClassifier()
-SA_tree = tree.DecisionTreeClassifier()
+SA_Tree = tree.DecisionTreeClassifier()
 
+all_kNN.fit(allX_train, allY_train)
+SA_kNN.fit(SAX_train, SAY_train)
 all_Tree.fit(allX_train, allY_train)
-kNN.fit(SAX_train, SAY_train)
-SA_tree.fit(SAX_train, SAY_train)
+SA_Tree.fit(SAX_train, SAY_train)
 
-model_tuples = [(all_Tree, 'All Tree Classifier'), (SA_tree, 'SA Tree Classifier'), (kNN, 'kNN Classifier')]
+model_tuples = [(all_Tree, 'All Tree Classifier'), (SA_Tree, 'SA Tree Classifier'), (all_kNN, "All kNN Classfier"), (SA_kNN, 'SA kNN Classifier')]
 
-for i, mod in enumerate(model_tuples):
-    if i == 0:
+for mod in model_tuples:
+    if mod[1].startswith("All"):
         test_model(mod, allX_test, allY_test)
     else:
         test_model(mod, SAX_test, SAY_test)
@@ -234,4 +261,11 @@ female_loudness_df = gender_loudness_df[gender_loudness_df['gender']==1]
 print("Average Song Loudness for Females:", female_loudness_df['loudness'].astype(float).mean())
 # print(gender_loudness_df)
 
+print("\nAll Tree feature Importance:")
+for i, feat_imp in enumerate(all_Tree.feature_importances_):
+    print(feats_list[i], ":",  feat_imp)
+
+print("\nSA Tree feature importance:")
+for i, feat_imp in enumerate(SA_Tree.feature_importances_):
+    print(emotions[i], ":",  feat_imp)
 
