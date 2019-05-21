@@ -41,7 +41,8 @@ def prep_sent(tok=None):
     TOKENIZER = pickle.load(f)
     K.clear_session()
     CLASSES = ["neutral", "happy", "sad", "hate", "anger"]
-    best_model = get_max_checkpoint(tok)
+    #best_model = get_max_checkpoint(tok)
+    best_model = "best_model.h5" if tok else "../best_model.h5"
     MODEL_TEST = load_model(best_model[1])
     MODEL_TEST._make_predict_function()
 
@@ -74,4 +75,4 @@ def main(line, tok):
 if __name__ == '__main__':
     defaultLine = ""
     line = sys.argv[1] if len(sys.argv) > 1 else defaultLine
-    main(line, "tokenizer.pickle")
+    main(line, True)
