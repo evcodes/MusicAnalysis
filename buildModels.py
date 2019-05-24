@@ -10,6 +10,10 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.ensemble import RandomForestClassifier as RFC
+from sklearn.externals.six import StringIO
+
+import graphviz
+import pydot
 
 from pprint import pprint as pp
 # import warnings
@@ -290,3 +294,12 @@ print("\nSA Random Forest feature importance:")
 for i, feat_imp in enumerate(SA_RandFor.feature_importances_):
     print(emotions[i], ":",  feat_imp)
 
+
+dot_data = StringIO()
+tree.export_graphviz(SA_Tree, out_file=dot_data, feature_names=emotions)
+graph = pydot.graph_from_dot_data(dot_data.getvalue())
+graph[0].write_pdf("SATree.pdf")
+
+tree.export_graphviz(all_Tree, out_file=dot_data, feature_names=feats_list)
+graph = pydot.graph_from_dot_data(dot_data.getvalue())
+graph[0].write_pdf("AllTree.pdf")
